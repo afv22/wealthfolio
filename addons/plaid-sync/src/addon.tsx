@@ -1,37 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { AddonContext } from '@wealthfolio/addon-sdk';
-import { Icons, Page, PageContent, PageHeader, Card, CardContent } from '@wealthfolio/ui';
+import { Icons } from '@wealthfolio/ui';
+import { usePlaidConfig } from './hooks/use-plaid-config';
+import { SetupPage } from './pages/setup-page';
+import { OverviewPage } from './pages/overview-page';
 
 function PlaidSyncPage({ ctx }: { ctx: AddonContext }) {
-  return (
-    <Page>
-      <PageHeader>
-        <div className="flex flex-col gap-2">
-          <h1 className="text-lg font-semibold sm:text-xl">Plaid Sync</h1>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Connect and sync your financial accounts with Plaid
-          </p>
-        </div>
-      </PageHeader>
-      <PageContent>
-        <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 sm:gap-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div className="border rounded-lg p-4 bg-muted/50">
-                  <h3 className="font-semibold mb-2">Getting Started</h3>
-                  <p className="text-sm text-muted-foreground">
-                    This addon allows you to securely connect your financial institutions
-                    and automatically sync your transactions and balances.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </PageContent>
-    </Page>
-  );
+  const { loading, isConfigured, reloadConfig } = usePlaidConfig(ctx);
+  const [setupComplete, setSetupComplete] = useState(false);
+
+  useEffect(() => {
+    if (isConfigured) {
+      setSetupComplete(true);
+    }
+  }, [isConfigured]);
+
+  const handleSetupComplete = () => {
+    setSetupComplete(true);
+    reloadConfig();
+  };
+
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Icons.Loader className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!setupComplete || !isConfigured) {
+    return <SetupPage ctx={ctx} onComplete={handleSetupComplete} />;
+  }
+
+  return <OverviewPage ctx={ctx} />;
 }
 
 export default function enable(ctx: AddonContext) {

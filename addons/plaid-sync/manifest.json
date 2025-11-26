@@ -10,13 +10,33 @@
   "permissions": [
     {
       "category": "accounts",
-      "functions": ["getAll"],
-      "purpose": "Access accounts information to display sync status"
+      "functions": ["getAll", "get", "create", "update"],
+      "purpose": "Create and manage Plaid-linked accounts"
+    },
+    {
+      "category": "activities",
+      "functions": ["getAll", "import", "checkImport", "create", "saveMany"],
+      "purpose": "Import and sync transactions from Plaid"
+    },
+    {
+      "category": "assets",
+      "functions": ["getAll", "get"],
+      "purpose": "Resolve securities and map Plaid assets"
+    },
+    {
+      "category": "secrets",
+      "functions": ["get", "set", "delete"],
+      "purpose": "Securely store Plaid credentials and access tokens"
     },
     {
       "category": "ui",
       "functions": ["sidebar.addItem", "router.add"],
       "purpose": "Add sidebar navigation and routes"
+    },
+    {
+      "category": "query",
+      "functions": ["getClient", "invalidateQueries"],
+      "purpose": "Invalidate cache after sync to refresh UI"
     }
   ]
 }
