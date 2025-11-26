@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { AddonContext } from '@wealthfolio/addon-sdk';
 import {
   Page,
@@ -8,22 +9,29 @@ import {
   Button,
   Icons,
 } from '@wealthfolio/ui';
+import { usePlaidConfig } from '../hooks/use-plaid-config';
+import { SettingsModal } from '../components/settings-modal';
 
 interface OverviewPageProps {
   ctx: AddonContext;
 }
 
-export function OverviewPage({}: OverviewPageProps) {
+export function OverviewPage({ ctx }: OverviewPageProps) {
+  const { config, reloadConfig } = usePlaidConfig(ctx);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
   return (
     <Page>
-      <PageHeader>
-        <div className="flex flex-col gap-2">
-          <h1 className="text-lg font-semibold sm:text-xl">Plaid Sync</h1>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Manage your connected financial accounts
-          </p>
-        </div>
-      </PageHeader>
+      <PageHeader
+        heading="Plaid Sync"
+        text="Manage your connected financial accounts"
+        actions={
+          <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
+            <Icons.Settings className="mr-2 h-4 w-4" />
+            Settings
+          </Button>
+        }
+      />
       <PageContent>
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 sm:gap-6">
           <Card>
@@ -54,6 +62,16 @@ export function OverviewPage({}: OverviewPageProps) {
           </Card>
         </div>
       </PageContent>
+
+      {config && (
+        <SettingsModal
+          ctx={ctx}
+          config={config}
+          open={settingsOpen}
+          onOpenChange={setSettingsOpen}
+          onConfigUpdate={reloadConfig}
+        />
+      )}
     </Page>
   );
 }
