@@ -1,6 +1,6 @@
 {
   "id": "rebalancer",
-  "name": "rebalancer",
+  "name": "Rebalancer",
   "version": "1.0.0",
   "description": "Track portfolio allocation and get rebalancing guidance",
   "author": "afv22",
@@ -12,6 +12,11 @@
       "category": "ui",
       "functions": ["sidebar.addItem"],
       "purpose": "Add navigation items to the sidebar"
+    },
+    {
+      "category": "data",
+      "functions": ["accounts.getAll", "portfolio.getHoldings"],
+      "purpose": "Access portfolio data for rebalancing analysis"
     }
   ],
   "keywords": ["wealthfolio", "addon"],
