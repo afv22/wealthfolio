@@ -970,8 +970,150 @@ function plaidDateToISO(date: string): string {
 
 ---
 
+## Implementation Blockers
+
+### CORS Limitation - Requires Backend Changes
+
+**Status:** Blocked - Cannot be implemented as self-contained addon
+
+**Problem:**
+Plaid's API does not support CORS (Cross-Origin Resource Sharing), which prevents direct API calls from browser-based environments, including Tauri's webview. This is a fundamental architectural limitation:
+
+1. **Browser CORS Policy:**
+   - Tauri uses native browser engines (WebKit on macOS, WebView2 on Windows)
+   - These engines enforce CORS security policies
+   - Plaid's API does not include `Access-Control-Allow-Origin` headers
+   - Browser blocks all direct requests to Plaid API endpoints
+
+2. **Affected API Calls:**
+   - `/link/token/create` - Create link token (required for Plaid Link)
+   - `/item/public_token/exchange` - Exchange public for access token
+   - `/accounts/get` - Fetch account information
+   - `/investments/transactions/get` - Fetch transaction history
+   - `/investments/holdings/get` - Fetch current holdings
+   - `/institutions/get_by_id` - Get institution details
+
+3. **Why Plaid Doesn't Support CORS:**
+   - **Security by design:** API calls require `PLAID-CLIENT-ID` and `PLAID-SECRET` headers
+   - **Secrets in client:** If browser could call directly, secrets would be exposed in:
+     - JavaScript bundles
+     - Browser DevTools Network tab
+     - Memory inspection
+   - **Server-side only:** Plaid expects all API calls from trusted backend servers
+
+**Attempted Solutions:**
+
+1. ✗ **Direct fetch() calls:** Blocked by CORS preflight (OPTIONS request fails with 404)
+2. ✗ **Tauri HTTP plugin:** Would only work in desktop mode, not web mode
+3. ✗ **Self-contained addon:** Not possible without backend proxy
+
+**Required Solution:**
+
+Backend proxy endpoints are required for this addon to function. Two options:
+
+**Option A: Generic HTTP Proxy**
+- Add generic `POST /api/http-proxy` endpoint
+- Accepts: `{ url, method, headers, body }`
+- Proxies requests to any external API
+- ⚠️ **Security risks:**
+  - SSRF (Server-Side Request Forgery) attacks
+  - Abuse for scanning internal networks
+  - Resource exhaustion
+  - Legal liability for proxied traffic
+- ✅ **Benefits:**
+  - Future addons can use it
+  - Works for any API integration
+
+**Option B: Plaid-Specific Proxy** (Recommended)
+- Add dedicated Plaid proxy endpoints:
+  - `POST /api/plaid/link-token/create`
+  - `POST /api/plaid/public-token/exchange`
+  - `POST /api/plaid/accounts/get`
+  - `POST /api/plaid/institutions/get-by-id`
+- Each endpoint:
+  - Accepts Plaid credentials in request body
+  - Makes request to Plaid API server-side
+  - Returns Plaid response to client
+- ✅ **Benefits:**
+  - Limited attack surface (only Plaid endpoints)
+  - Can validate request structure
+  - Audit logging for Plaid calls
+  - Rate limiting per user
+- ⚠️ **Trade-offs:**
+  - Secrets pass through request body (acceptable for local-first app)
+  - Backend doesn't store secrets (stateless proxy)
+  - Works in both desktop and web modes
+
+**Implementation Requirements:**
+
+Both Tauri (desktop) and Axum (web server) need proxy implementations:
+
+```rust
+// Tauri command (src-tauri/src/commands/plaid.rs)
+#[tauri::command]
+pub async fn plaid_request(
+    endpoint: String,
+    client_id: String,
+    secret: String,
+    environment: String,
+    body: Value,
+) -> Result<Value, String> {
+    // Forward request to Plaid API
+}
+
+// Axum endpoint (src-server/src/api.rs)
+pub async fn plaid_proxy(
+    Json(request): Json<PlaidProxyRequest>,
+) -> Result<Json<Value>, (StatusCode, String)> {
+    // Forward request to Plaid API
+}
+```
+
+**Security Considerations:**
+- Rate limiting per user/session
+- Request timeout limits (30 seconds)
+- Request/response size limits (1MB)
+- Audit logging for all Plaid calls
+- Optional domain allowlist for generic proxy
+
+**Impact on Addon Architecture:**
+
+The addon would call backend endpoints instead of Plaid directly:
+
+```typescript
+// Current (doesn't work):
+const response = await fetch('https://sandbox.plaid.com/link/token/create', {
+  headers: {
+    'PLAID-CLIENT-ID': clientId,
+    'PLAID-SECRET': secret,
+  },
+  body: JSON.stringify(payload),
+});
+
+// Required (with backend proxy):
+const response = await fetch('/api/plaid/link-token/create', {
+  method: 'POST',
+  body: JSON.stringify({
+    client_id: clientId,
+    secret: secret,
+    environment: 'sandbox',
+    ...payload,
+  }),
+});
+```
+
+**Conclusion:**
+This addon **cannot be implemented as a self-contained add-on** without platform changes. Backend proxy endpoints are a hard requirement. This requires a separate PR to the main Wealthfolio repository and coordination with the core team.
+
+**Recommendation:**
+Proceed with Option B (Plaid-specific proxy) as it provides the best security/functionality balance for a local-first application where secrets in the client are acceptable.
+
+---
+
 ## Conclusion
 
-This design provides a comprehensive blueprint for implementing Plaid integration in Wealthfolio as an add-on. The architecture leverages the existing add-on framework, follows security best practices, and provides a user-friendly experience for connecting and syncing financial accounts.
+This design provides a comprehensive blueprint for implementing Plaid integration in Wealthfolio as an add-on. However, due to CORS limitations with Plaid's API, this addon **requires backend changes** and cannot be implemented as a fully self-contained addon.
 
-The phased approach ensures an MVP can be delivered quickly while leaving room for future enhancements. The focus on manual sync, secure credential storage, and proper transaction mapping ensures the add-on will be reliable and trustworthy for managing users' financial data.
+The architecture otherwise leverages the existing add-on framework, follows security best practices, and provides a user-friendly experience for connecting and syncing financial accounts.
+
+The phased approach ensures an MVP can be delivered quickly once backend proxy support is added. The focus on manual sync, secure credential storage, and proper transaction mapping ensures the add-on will be reliable and trustworthy for managing users' financial data.
