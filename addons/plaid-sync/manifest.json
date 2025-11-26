@@ -1,0 +1,22 @@
+{
+  "id": "plaid-sync-addon",
+  "name": "Plaid Sync",
+  "version": "1.0.0",
+  "description": "Sync your financial accounts with Plaid",
+  "author": "Wealthfolio",
+  "main": "dist/addon.js",
+  "sdkVersion": "2.0.0",
+  "enabled": true,
+  "permissions": [
+    {
+      "category": "accounts",
+      "functions": ["getAll"],
+      "purpose": "Access accounts information to display sync status"
+    },
+    {
+      "category": "ui",
+      "functions": ["sidebar.addItem", "router.add"],
+      "purpose": "Add sidebar navigation and routes"
+    }
+  ]
+}

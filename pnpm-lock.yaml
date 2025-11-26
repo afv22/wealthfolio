@@ -285,6 +285,49 @@ importers:
         specifier: ^7.1.5
         version: 7.1.5(@types/node@20.19.13)(jiti@2.6.1)(lightningcss@1.30.2)
 
+  addons/plaid-sync:
+    dependencies:
+      '@tanstack/react-query':
+        specifier: ^5.90.5
+        version: 5.90.9(react@19.1.1)
+      '@wealthfolio/addon-sdk':
+        specifier: workspace:*
+        version: link:../../packages/addon-sdk
+      '@wealthfolio/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      react:
+        specifier: ^19.1.1
+        version: 19.1.1
+    devDependencies:
+      '@tailwindcss/vite':
+        specifier: ^4.1.13
+        version: 4.1.17(vite@7.1.5(@types/node@20.19.13)(jiti@2.6.1)(lightningcss@1.30.2))
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.13
+      '@types/react':
+        specifier: ^19.1.1
+        version: 19.1.13
+      '@types/react-dom':
+        specifier: ^19.1.1
+        version: 19.1.9(@types/react@19.1.13)
+      '@wealthfolio/addon-dev-tools':
+        specifier: workspace:*
+        version: link:../../packages/addon-dev-tools
+      rollup-plugin-external-globals:
+        specifier: ^0.13.0
+        version: 0.13.0(rollup@4.50.2)
+      tailwindcss:
+        specifier: ^4.1.13
+        version: 4.1.17
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.2
+      vite:
+        specifier: ^7.1.5
+        version: 7.1.5(@types/node@20.19.13)(jiti@2.6.1)(lightningcss@1.30.2)
+
   addons/swingfolio-addon:
     dependencies:
       '@tanstack/react-query':
@@ -8557,6 +8600,13 @@ snapshots:
       '@tailwindcss/node': 4.1.13
       '@tailwindcss/oxide': 4.1.13
       tailwindcss: 4.1.13
+      vite: 7.1.5(@types/node@20.19.13)(jiti@2.6.1)(lightningcss@1.30.2)
+
+  '@tailwindcss/vite@4.1.17(vite@7.1.5(@types/node@20.19.13)(jiti@2.6.1)(lightningcss@1.30.2))':
+    dependencies:
+      '@tailwindcss/node': 4.1.17
+      '@tailwindcss/oxide': 4.1.17
+      tailwindcss: 4.1.17
       vite: 7.1.5(@types/node@20.19.13)(jiti@2.6.1)(lightningcss@1.30.2)
 
   '@tailwindcss/vite@4.1.17(vite@7.1.5(@types/node@24.5.1)(jiti@2.6.1)(lightningcss@1.30.2))':
