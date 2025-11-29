@@ -1,4 +1,8 @@
+import { AddonContext } from "@wealthfolio/addon-sdk";
 import { Card, CardContent, CardHeader, CardTitle, cn } from "@wealthfolio/ui";
+import { useMemo } from "react";
+import { useAllocationTargets } from "../hooks/use-allocation-targets";
+import { usePortfolioAllocation } from "../hooks/use-portfolio-allocation";
 
 export interface AllocationDataPoint {
   assetClass: string;
@@ -7,16 +11,49 @@ export interface AllocationDataPoint {
 }
 
 interface DivergingBarChartProps {
-  data: AllocationDataPoint[];
+  ctx: AddonContext;
   title?: string;
   className?: string;
 }
 
 export function DivergingBarChart({
-  data,
+  ctx,
   title = "Portfolio Allocation vs Target",
   className,
 }: DivergingBarChartProps) {
+  const { data: allocations = [] } = usePortfolioAllocation({ ctx });
+  const { targets } = useAllocationTargets({ ctx });
+
+  // Merge current allocations with target allocations
+  const data = useMemo(() => {
+    // Create a map of all asset classes (current + targets)
+    const allAssetClasses = new Set<string>();
+    allocations.forEach((a) => allAssetClasses.add(a.assetClass));
+    targets.forEach((t) => allAssetClasses.add(t.assetClass));
+
+    // Build chart data
+    return Array.from(allAssetClasses)
+      .map((assetClass) => {
+        const currentData = allocations.find((a) => a.assetClass === assetClass);
+        const targetData = targets.find((t) => t.assetClass === assetClass);
+        const target = targetData?.target || 0;
+        const current = currentData?.current || 0;
+
+        return {
+          assetClass,
+          current,
+          target,
+        };
+      })
+      .filter((d) => d.current > 0 || d.target > 0) // Only show asset classes with data
+      .sort((a, b) => {
+        // Sort by whichever is larger (current or target)
+        const aMax = Math.max(a.current, a.target);
+        const bMax = Math.max(b.current, b.target);
+        return bMax - aMax;
+      });
+  }, [allocations, targets]);
+
   // Check if any targets are set
   const hasTargets = data.some((d) => d.target > 0);
 

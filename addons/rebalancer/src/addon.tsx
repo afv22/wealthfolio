@@ -8,38 +8,8 @@ import { useAllocationTargets } from "./hooks/use-allocation-targets";
 import { usePortfolioAllocation } from "./hooks/use-portfolio-allocation";
 
 function RebalancerContent({ ctx }: { ctx: AddonContext }) {
-  const { data: allocations = [], isLoading, error } = usePortfolioAllocation({ ctx });
-  const { targets, isLoading: targetsLoading } = useAllocationTargets({ ctx });
-
-  // Merge current allocations with target allocations
-  const chartData = React.useMemo(() => {
-    // Create a map of all asset classes (current + targets)
-    const allAssetClasses = new Set<string>();
-    allocations.forEach((a) => allAssetClasses.add(a.assetClass));
-    targets.forEach((t) => allAssetClasses.add(t.assetClass));
-
-    // Build chart data
-    return Array.from(allAssetClasses)
-      .map((assetClass) => {
-        const currentData = allocations.find((a) => a.assetClass === assetClass);
-        const targetData = targets.find((t) => t.assetClass === assetClass);
-        const target = targetData?.target || 0;
-        const current = currentData?.current || 0;
-
-        return {
-          assetClass,
-          current,
-          target,
-        };
-      })
-      .filter((d) => d.current > 0 || d.target > 0) // Only show asset classes with data
-      .sort((a, b) => {
-        // Sort by whichever is larger (current or target)
-        const aMax = Math.max(a.current, a.target);
-        const bMax = Math.max(b.current, b.target);
-        return bMax - aMax;
-      });
-  }, [allocations, targets]);
+  const { isLoading: allocationLoading, error: allocationError } = usePortfolioAllocation({ ctx });
+  const { isLoading: targetsLoading, error: targetsError } = useAllocationTargets({ ctx });
 
   const PageWrapper = ({ children }: { children: React.ReactNode }) => (
     <Page>
@@ -48,7 +18,7 @@ function RebalancerContent({ ctx }: { ctx: AddonContext }) {
     </Page>
   );
 
-  if (isLoading || targetsLoading) {
+  if (allocationLoading || targetsLoading) {
     return (
       <PageWrapper>
         <div className="flex items-center justify-center py-8">
@@ -58,12 +28,26 @@ function RebalancerContent({ ctx }: { ctx: AddonContext }) {
     );
   }
 
-  if (error) {
+  if (allocationError) {
     return (
       <PageWrapper>
         <div className="flex items-center justify-center py-8">
           <div className="text-destructive">
-            Error loading portfolio data: {error instanceof Error ? error.message : "Unknown error"}
+            Error loading portfolio allocation data:{" "}
+            {allocationError instanceof Error ? allocationError.message : "Unknown error"}
+          </div>
+        </div>
+      </PageWrapper>
+    );
+  }
+
+  if (targetsError) {
+    return (
+      <PageWrapper>
+        <div className="flex items-center justify-center py-8">
+          <div className="text-destructive">
+            Error loading allocation target data:{" "}
+            {targetsError instanceof Error ? targetsError.message : "Unknown error"}
           </div>
         </div>
       </PageWrapper>
@@ -73,19 +57,9 @@ function RebalancerContent({ ctx }: { ctx: AddonContext }) {
   return (
     <PageWrapper>
       <PageContent>
-        <DivergingBarChart data={chartData} />
+        <DivergingBarChart ctx={ctx} />
       </PageContent>
     </PageWrapper>
-  );
-}
-
-function RebalancerAddon({ ctx }: { ctx: AddonContext }) {
-  const sharedQueryClient = ctx.api.query.getClient();
-
-  return (
-    <QueryClientProvider client={sharedQueryClient as any}>
-      <RebalancerContent ctx={ctx} />
-    </QueryClientProvider>
   );
 }
 
@@ -107,7 +81,7 @@ const enable: AddonEnableFunction = (context) => {
       const sharedQueryClient = context.api.query.getClient();
       return (
         <QueryClientProvider client={sharedQueryClient as any}>
-          <RebalancerAddon ctx={context} />
+          <RebalancerContent ctx={context} />
         </QueryClientProvider>
       );
     };
