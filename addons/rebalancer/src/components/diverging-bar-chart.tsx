@@ -1,8 +1,7 @@
 import { AddonContext } from "@wealthfolio/addon-sdk";
 import { Card, CardContent, CardHeader, CardTitle, cn } from "@wealthfolio/ui";
 import { useMemo } from "react";
-import { useAllocationTargets } from "../hooks/use-allocation-targets";
-import { usePortfolioAllocation } from "../hooks/use-portfolio-allocation";
+import { useAllocationTargets, usePortfolioAllocation } from "../hooks";
 
 export interface AllocationDataPoint {
   assetClass: string;

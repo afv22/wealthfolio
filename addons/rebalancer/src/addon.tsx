@@ -4,8 +4,7 @@ import { Icons, Page, PageContent, PageHeader } from "@wealthfolio/ui";
 import React from "react";
 import { DivergingBarChart } from "./components/diverging-bar-chart";
 import { HeaderActions } from "./components/header-actions";
-import { useAllocationTargets } from "./hooks/use-allocation-targets";
-import { usePortfolioAllocation } from "./hooks/use-portfolio-allocation";
+import { useAllocationTargets, usePortfolioAllocation } from "./hooks";
 
 function RebalancerContent({ ctx }: { ctx: AddonContext }) {
   const { isLoading: allocationLoading, error: allocationError } = usePortfolioAllocation({ ctx });

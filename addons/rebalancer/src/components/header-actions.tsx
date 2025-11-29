@@ -9,8 +9,7 @@ import {
   Icons,
 } from "@wealthfolio/ui";
 import { useMemo, useState } from "react";
-import { useAllocationTargets } from "../hooks/use-allocation-targets";
-import { usePortfolioAllocation } from "../hooks/use-portfolio-allocation";
+import { useAllocationTargets, usePortfolioAllocation } from "../hooks";
 import { TargetManager } from "./target-manager";
 
 interface HeaderActionsProps {
