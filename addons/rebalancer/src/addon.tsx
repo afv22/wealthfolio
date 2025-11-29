@@ -54,9 +54,7 @@ function RebalancerContent({ ctx }: { ctx: AddonContext }) {
 
   return (
     <PageWrapper>
-      <PageContent>
-        <DivergingBarChart ctx={ctx} />
-      </PageContent>
+      <DivergingBarChart ctx={ctx} />
     </PageWrapper>
   );
 }
