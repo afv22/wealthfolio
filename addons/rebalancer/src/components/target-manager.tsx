@@ -1,11 +1,6 @@
 import { Button, Card, CardContent, CardHeader, CardTitle, Icons, Input } from "@wealthfolio/ui";
 import React from "react";
-import type { AllocationTarget } from "../hooks/use-allocation-targets";
-
-interface HoldingOption {
-  name: string;
-  symbol?: string;
-}
+import type { AllocationTarget, HoldingOption } from "../types";
 
 interface TargetManagerProps {
   targets: AllocationTarget[];
@@ -14,12 +9,7 @@ interface TargetManagerProps {
   isSaving?: boolean;
 }
 
-export function TargetManager({
-  targets,
-  existingHoldings,
-  onSave,
-  isSaving = false,
-}: TargetManagerProps) {
+export default ({ targets, existingHoldings, onSave, isSaving = false }: TargetManagerProps) => {
   const [editedTargets, setEditedTargets] = React.useState<AllocationTarget[]>(targets);
   const [newAssetClass, setNewAssetClass] = React.useState("");
   const [newTarget, setNewTarget] = React.useState("");
@@ -289,4 +279,4 @@ export function TargetManager({
       </CardContent>
     </Card>
   );
-}
+};

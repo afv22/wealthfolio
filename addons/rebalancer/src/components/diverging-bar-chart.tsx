@@ -3,23 +3,17 @@ import { Card, CardContent, CardHeader, CardTitle, cn } from "@wealthfolio/ui";
 import { useMemo } from "react";
 import { useAllocationTargets, usePortfolioAllocation } from "../hooks";
 
-export interface AllocationDataPoint {
-  assetClass: string;
-  current: number;
-  target: number;
-}
-
 interface DivergingBarChartProps {
   ctx: AddonContext;
   title?: string;
   className?: string;
 }
 
-export function DivergingBarChart({
+export default ({
   ctx,
   title = "Portfolio Allocation vs Target",
   className,
-}: DivergingBarChartProps) {
+}: DivergingBarChartProps) => {
   const { data: allocations = [] } = usePortfolioAllocation({ ctx });
   const { targets } = useAllocationTargets({ ctx });
 
@@ -183,4 +177,4 @@ export function DivergingBarChart({
       </CardContent>
     </Card>
   );
-}
+};

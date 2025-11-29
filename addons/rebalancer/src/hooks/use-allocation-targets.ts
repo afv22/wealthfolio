@@ -1,10 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AddonContext } from "@wealthfolio/addon-sdk";
-
-export interface AllocationTarget {
-  assetClass: string;
-  target: number;
-}
+import type { AllocationTarget } from "../types";
 
 const STORAGE_KEY = "rebalancer_targets";
 

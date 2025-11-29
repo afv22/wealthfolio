@@ -1,14 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { type AddonContext } from "@wealthfolio/addon-sdk";
+import { AllocationData } from "../types";
 import { useAccounts } from "./use-accounts";
-
-export interface AllocationData {
-  assetClass: string; // Using this field name for compatibility, but will store symbol/name
-  current: number;
-  marketValue: number;
-  symbol?: string;
-  name?: string;
-}
 
 interface UsePortfolioAllocationOptions {
   ctx: AddonContext;

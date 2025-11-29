@@ -10,13 +10,13 @@ import {
 } from "@wealthfolio/ui";
 import { useMemo, useState } from "react";
 import { useAllocationTargets, usePortfolioAllocation } from "../hooks";
-import { TargetManager } from "./target-manager";
+import TargetManager from "./target-manager";
 
 interface HeaderActionsProps {
   ctx: AddonContext;
 }
 
-export const HeaderActions = ({ ctx }: HeaderActionsProps) => {
+export default ({ ctx }: HeaderActionsProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const { data: allocations = [] } = usePortfolioAllocation({ ctx });

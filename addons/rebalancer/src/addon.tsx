@@ -2,8 +2,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import type { AddonContext, AddonEnableFunction } from "@wealthfolio/addon-sdk";
 import { Icons, Page, PageContent, PageHeader } from "@wealthfolio/ui";
 import React from "react";
-import { DivergingBarChart } from "./components/diverging-bar-chart";
-import { HeaderActions } from "./components/header-actions";
+import { DivergingBarChart, HeaderActions } from "./components";
 import { useAllocationTargets, usePortfolioAllocation } from "./hooks";
 
 function RebalancerContent({ ctx }: { ctx: AddonContext }) {
