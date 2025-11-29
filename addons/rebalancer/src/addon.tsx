@@ -3,33 +3,37 @@ import type { AddonContext, AddonEnableFunction } from "@wealthfolio/addon-sdk";
 import { Card, CardContent, Icons } from "@wealthfolio/ui";
 import React from "react";
 import { DivergingBarChart } from "./components/diverging-bar-chart";
+import { TargetManager } from "./components/target-manager";
+import { useAllocationTargets } from "./hooks/use-allocation-targets";
 import { usePortfolioAllocation } from "./hooks/use-portfolio-allocation";
-
-// Placeholder target allocations (will be configurable later)
-const DEFAULT_TARGETS: Record<string, number> = {
-  "US Equities": 60,
-  "International Equities": 20,
-  Bonds: 15,
-  Cash: 5,
-  Cryptocurrency: 0,
-  Other: 0,
-};
 
 function RebalancerContent({ ctx }: { ctx: AddonContext }) {
   const { data: allocations = [], isLoading, error } = usePortfolioAllocation({ ctx });
+  const {
+    targets,
+    updateTargets,
+    isUpdating,
+    isLoading: targetsLoading,
+  } = useAllocationTargets({ ctx });
+
+  // Get list of existing holdings for the dropdown
+  const existingHoldings = React.useMemo(() => {
+    return allocations.map((a) => a.assetClass);
+  }, [allocations]);
 
   // Merge current allocations with target allocations
   const chartData = React.useMemo(() => {
     // Create a map of all asset classes (current + targets)
     const allAssetClasses = new Set<string>();
     allocations.forEach((a) => allAssetClasses.add(a.assetClass));
-    Object.keys(DEFAULT_TARGETS).forEach((ac) => allAssetClasses.add(ac));
+    targets.forEach((t) => allAssetClasses.add(t.assetClass));
 
     // Build chart data
     return Array.from(allAssetClasses)
       .map((assetClass) => {
         const currentData = allocations.find((a) => a.assetClass === assetClass);
-        const target = DEFAULT_TARGETS[assetClass] || 0;
+        const targetData = targets.find((t) => t.assetClass === assetClass);
+        const target = targetData?.target || 0;
         const current = currentData?.current || 0;
 
         return {
@@ -45,9 +49,9 @@ function RebalancerContent({ ctx }: { ctx: AddonContext }) {
         const bMax = Math.max(b.current, b.target);
         return bMax - aMax;
       });
-  }, [allocations]);
+  }, [allocations, targets]);
 
-  if (isLoading) {
+  if (isLoading || targetsLoading) {
     return (
       <div className="p-6">
         <Card>
@@ -92,14 +96,12 @@ function RebalancerContent({ ctx }: { ctx: AddonContext }) {
 
       <DivergingBarChart data={chartData} />
 
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-muted-foreground text-sm">
-            <strong>Note:</strong> Target allocations are currently set to default values.
-            Configuration options coming soon!
-          </p>
-        </CardContent>
-      </Card>
+      <TargetManager
+        targets={targets}
+        existingHoldings={existingHoldings}
+        onSave={updateTargets}
+        isSaving={isUpdating}
+      />
     </div>
   );
 }
