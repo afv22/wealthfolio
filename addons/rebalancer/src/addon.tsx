@@ -1,5 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import type { AddonContext, AddonEnableFunction } from "@wealthfolio/addon-sdk";
+import type { AddonContext, AddonEnableFunction, QueryClient } from "@wealthfolio/addon-sdk";
 import { Icons, Page, PageContent, PageHeader } from "@wealthfolio/ui";
 import React from "react";
 import { DivergingBarChart, HeaderActions } from "./components";
@@ -76,9 +76,9 @@ const enable: AddonEnableFunction = (context) => {
 
     // Create wrapper component with QueryClientProvider
     const RebalancerWrapper = () => {
-      const sharedQueryClient = context.api.query.getClient();
+      const sharedQueryClient = context.api.query.getClient() as QueryClient;
       return (
-        <QueryClientProvider client={sharedQueryClient as any}>
+        <QueryClientProvider client={sharedQueryClient}>
           <RebalancerContent ctx={context} />
         </QueryClientProvider>
       );
