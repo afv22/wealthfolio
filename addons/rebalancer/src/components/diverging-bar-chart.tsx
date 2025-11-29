@@ -61,23 +61,23 @@ export function DivergingBarChart({
                       <div className="grid grid-cols-2 items-center gap-0">
                         {/* Left side - Target allocation */}
                         <div className="relative flex h-8 items-center justify-end pr-1">
-                          {/* Light target bar */}
+                          {/* Target bar */}
                           <div
-                            className="h-6 rounded-l bg-green-500/20"
+                            className="h-6 rounded-l bg-green-500/30"
                             style={{ width: `${targetScaled}%` }}
                           />
 
                           {/* Target percentage label */}
-                          <div className="text-foreground absolute right-2 text-xs font-medium">
+                          <div className="text-muted-foreground absolute right-2 text-xs">
                             {item.target.toFixed(1)}%
                           </div>
                         </div>
 
                         {/* Right side - Current allocation */}
                         <div className="relative flex h-8 items-center justify-start pl-1">
-                          {/* Light current bar */}
+                          {/* Current bar */}
                           <div
-                            className="h-6 rounded-r bg-blue-500/20"
+                            className="h-6 rounded-r bg-blue-500/30"
                             style={{ width: `${currentScaled}%` }}
                           />
 
@@ -91,32 +91,19 @@ export function DivergingBarChart({
                       {/* Center axis line */}
                       <div className="bg-border absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2" />
 
-                      {/* Overlay bar showing deviation - extends from center to the end of whichever is larger */}
+                      {/* Overlay bar showing deviation - only the delta amount */}
                       {deviation !== 0 && (
                         <div
                           className={cn(
                             "absolute top-1/2 h-6 -translate-y-1/2 rounded",
                             isCurrentLarger
-                              ? "left-1/2 bg-blue-500/60" // Current is larger, extends right
-                              : "right-1/2 bg-green-500/60", // Target is larger, extends left
+                              ? "left-1/2 bg-blue-500/60" // Current is larger, show delta extending right from center
+                              : "right-1/2 bg-green-500/60", // Target is larger, show delta extending left from center
                           )}
                           style={{
-                            width: `${isCurrentLarger ? currentScaled / 2 : targetScaled / 2}%`,
+                            width: `${(Math.abs(deviation) * scale) / 2}%`,
                           }}
-                        >
-                          {/* Deviation label */}
-                          <div
-                            className={cn(
-                              "absolute top-1/2 -translate-y-1/2 text-xs font-bold whitespace-nowrap text-white",
-                              isCurrentLarger
-                                ? "left-1/2 -translate-x-1/2"
-                                : "right-1/2 translate-x-1/2",
-                            )}
-                          >
-                            {deviation > 0 ? "+" : ""}
-                            {deviation.toFixed(1)}%
-                          </div>
-                        </div>
+                        />
                       )}
                     </>
                   ) : (
@@ -144,20 +131,13 @@ export function DivergingBarChart({
                   )}
                 </div>
 
-                {/* Deviation indicator below - only show if targets exist */}
-                {hasTargets && (
+                {/* Deviation indicator below - always show if targets exist and there's a delta */}
+                {hasTargets && Math.abs(deviation) > 0 && (
                   <div className="text-center text-xs">
-                    {deviation > 0 && (
-                      <span className="font-medium text-blue-600">
-                        {deviation.toFixed(1)}% over target
-                      </span>
-                    )}
-                    {deviation < 0 && (
-                      <span className="font-medium text-green-600">
-                        Need {Math.abs(deviation).toFixed(1)}% more
-                      </span>
-                    )}
-                    {deviation === 0 && <span className="text-muted-foreground">On target</span>}
+                    <span className="text-muted-foreground">
+                      {deviation > 0 ? "+" : ""}
+                      {deviation.toFixed(1)}%
+                    </span>
                   </div>
                 )}
               </div>
