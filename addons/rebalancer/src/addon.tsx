@@ -16,9 +16,12 @@ function RebalancerContent({ ctx }: { ctx: AddonContext }) {
     isLoading: targetsLoading,
   } = useAllocationTargets({ ctx });
 
-  // Get list of existing holdings for the dropdown
+  // Get list of existing holdings for the dropdown with symbols
   const existingHoldings = React.useMemo(() => {
-    return allocations.map((a) => a.assetClass);
+    return allocations.map((a) => ({
+      name: a.assetClass,
+      symbol: a.symbol,
+    }));
   }, [allocations]);
 
   // Merge current allocations with target allocations

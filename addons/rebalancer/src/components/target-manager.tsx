@@ -2,9 +2,14 @@ import { Button, Card, CardContent, CardHeader, CardTitle, Icons, Input } from "
 import React from "react";
 import type { AllocationTarget } from "../hooks/use-allocation-targets";
 
+interface HoldingOption {
+  name: string;
+  symbol?: string;
+}
+
 interface TargetManagerProps {
   targets: AllocationTarget[];
-  existingHoldings: string[];
+  existingHoldings: HoldingOption[];
   onSave: (targets: AllocationTarget[]) => void;
   isSaving?: boolean;
 }
@@ -18,7 +23,6 @@ export function TargetManager({
   const [editedTargets, setEditedTargets] = React.useState<AllocationTarget[]>(targets);
   const [newAssetClass, setNewAssetClass] = React.useState("");
   const [newTarget, setNewTarget] = React.useState("");
-  const [isCustom, setIsCustom] = React.useState(false);
   const [showDropdown, setShowDropdown] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
 
@@ -42,29 +46,27 @@ export function TargetManager({
   const isValid = Math.abs(totalTarget - 100) < 0.01; // Allow for floating point precision
 
   const handleAddTarget = () => {
-    const assetClass = isCustom ? newAssetClass : newAssetClass;
     const targetValue = parseFloat(newTarget);
 
-    if (!assetClass.trim() || isNaN(targetValue) || targetValue < 0 || targetValue > 100) {
+    if (!newAssetClass.trim() || isNaN(targetValue) || targetValue < 0 || targetValue > 100) {
       return;
     }
 
     // Check if asset class already exists
-    const existingIndex = editedTargets.findIndex((t) => t.assetClass === assetClass);
+    const existingIndex = editedTargets.findIndex((t) => t.assetClass === newAssetClass);
     if (existingIndex >= 0) {
       // Update existing
       const updated = [...editedTargets];
-      updated[existingIndex] = { assetClass, target: targetValue };
+      updated[existingIndex] = { assetClass: newAssetClass, target: targetValue };
       setEditedTargets(updated);
     } else {
       // Add new
-      setEditedTargets([...editedTargets, { assetClass, target: targetValue }]);
+      setEditedTargets([...editedTargets, { assetClass: newAssetClass, target: targetValue }]);
     }
 
     // Reset form
     setNewAssetClass("");
     setNewTarget("");
-    setIsCustom(false);
     setShowDropdown(false);
   };
 
@@ -90,12 +92,10 @@ export function TargetManager({
 
   const handleSelectHolding = (holding: string) => {
     setNewAssetClass(holding);
-    setIsCustom(false);
     setShowDropdown(false);
   };
 
   const handleCustomInput = () => {
-    setIsCustom(true);
     setShowDropdown(false);
   };
 
@@ -104,10 +104,25 @@ export function TargetManager({
     onSave([]);
   };
 
-  // Filter out already added holdings
-  const availableHoldings = existingHoldings.filter(
-    (h) => !editedTargets.some((t) => t.assetClass === h),
-  );
+  // Filter holdings based on search input
+  const filteredHoldings = React.useMemo(() => {
+    const searchTerm = newAssetClass.toLowerCase().trim();
+
+    // Filter out already added holdings
+    const available = existingHoldings.filter(
+      (h) => !editedTargets.some((t) => t.assetClass === h.name),
+    );
+
+    // If no search term, return all available
+    if (!searchTerm) return available;
+
+    // Filter by name or symbol containing the search term
+    return available.filter((h) => {
+      const nameMatch = h.name.toLowerCase().includes(searchTerm);
+      const symbolMatch = h.symbol?.toLowerCase().includes(searchTerm);
+      return nameMatch || symbolMatch;
+    });
+  }, [existingHoldings, editedTargets, newAssetClass]);
 
   return (
     <Card>
@@ -180,56 +195,62 @@ export function TargetManager({
             <div className="relative" ref={dropdownRef}>
               <div className="flex gap-2">
                 <Input
-                  placeholder={
-                    isCustom ? "Enter custom asset class" : "Select or enter asset class"
-                  }
+                  placeholder="Select or enter asset class"
                   value={newAssetClass}
-                  onChange={(e) => setNewAssetClass(e.target.value)}
-                  onFocus={() => !isCustom && setShowDropdown(true)}
+                  onChange={(e) => {
+                    setNewAssetClass(e.target.value);
+                    setShowDropdown(true);
+                  }}
+                  onFocus={() => setShowDropdown(true)}
                   className="flex-1"
                 />
-                {!isCustom && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowDropdown(!showDropdown)}
-                  >
-                    <Icons.ChevronDown className="h-4 w-4" />
-                  </Button>
-                )}
+                <Button variant="outline" size="sm" onClick={() => setShowDropdown(!showDropdown)}>
+                  <Icons.ChevronDown className="h-4 w-4" />
+                </Button>
               </div>
 
               {/* Dropdown menu */}
-              {showDropdown && !isCustom && (
+              {showDropdown && (
                 <div className="bg-background absolute z-10 mt-1 w-full rounded-md border shadow-lg">
                   <div className="max-h-48 overflow-y-auto">
-                    {availableHoldings.length > 0 ? (
+                    {filteredHoldings.length > 0 ? (
                       <>
-                        {availableHoldings.map((holding) => (
+                        {filteredHoldings.map((holding) => (
                           <button
-                            key={holding}
+                            key={holding.name}
                             className="hover:bg-accent w-full px-3 py-2 text-left text-sm"
-                            onClick={() => handleSelectHolding(holding)}
+                            onClick={() => handleSelectHolding(holding.name)}
                           >
-                            {holding}
+                            <div className="flex items-center justify-between gap-2">
+                              <span>{holding.name}</span>
+                              {holding.symbol && (
+                                <span className="text-muted-foreground text-xs">
+                                  {holding.symbol}
+                                </span>
+                              )}
+                            </div>
                           </button>
                         ))}
-                        <div className="border-t">
-                          <button
-                            className="hover:bg-accent w-full px-3 py-2 text-left text-sm"
-                            onClick={handleCustomInput}
-                          >
-                            <span className="font-medium">+ Enter custom asset class</span>
-                          </button>
-                        </div>
+                        {newAssetClass.trim() && (
+                          <div className="border-t">
+                            <button
+                              className="hover:bg-accent w-full px-3 py-2 text-left text-sm"
+                              onClick={handleCustomInput}
+                            >
+                              <span className="font-medium">+ Add "{newAssetClass}" as custom</span>
+                            </button>
+                          </div>
+                        )}
                       </>
                     ) : (
-                      <button
-                        className="hover:bg-accent w-full px-3 py-2 text-left text-sm"
-                        onClick={handleCustomInput}
-                      >
-                        <span className="font-medium">+ Enter custom asset class</span>
-                      </button>
+                      newAssetClass.trim() && (
+                        <button
+                          className="hover:bg-accent w-full px-3 py-2 text-left text-sm"
+                          onClick={handleCustomInput}
+                        >
+                          <span className="font-medium">+ Add "{newAssetClass}" as custom</span>
+                        </button>
+                      )
                     )}
                   </div>
                 </div>
