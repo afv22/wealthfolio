@@ -1,6 +1,17 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import type { AddonContext, AddonEnableFunction } from "@wealthfolio/addon-sdk";
-import { Card, CardContent, Icons } from "@wealthfolio/ui";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  Icons,
+  Page,
+  PageContent,
+  PageHeader,
+} from "@wealthfolio/ui";
 import React from "react";
 import { DivergingBarChart } from "./components/diverging-bar-chart";
 import { TargetManager } from "./components/target-manager";
@@ -8,6 +19,7 @@ import { useAllocationTargets } from "./hooks/use-allocation-targets";
 import { usePortfolioAllocation } from "./hooks/use-portfolio-allocation";
 
 function RebalancerContent({ ctx }: { ctx: AddonContext }) {
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const { data: allocations = [], isLoading, error } = usePortfolioAllocation({ ctx });
   const {
     targets,
@@ -23,6 +35,11 @@ function RebalancerContent({ ctx }: { ctx: AddonContext }) {
       symbol: a.symbol,
     }));
   }, [allocations]);
+
+  const handleSaveTargets = (newTargets: typeof targets) => {
+    updateTargets(newTargets);
+    setIsDialogOpen(false);
+  };
 
   // Merge current allocations with target allocations
   const chartData = React.useMemo(() => {
@@ -54,58 +71,64 @@ function RebalancerContent({ ctx }: { ctx: AddonContext }) {
       });
   }, [allocations, targets]);
 
+  const headerActions = (
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Icons.Settings className="mr-2 h-4 w-4" />
+          Configure Targets
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Configure Target Allocations</DialogTitle>
+        </DialogHeader>
+        <TargetManager
+          targets={targets}
+          existingHoldings={existingHoldings}
+          onSave={handleSaveTargets}
+          isSaving={isUpdating}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+
   if (isLoading || targetsLoading) {
     return (
-      <div className="p-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-center py-8">
-              <div className="text-muted-foreground">Loading portfolio data...</div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <Page>
+        <PageHeader heading="Rebalancer" actions={headerActions} />
+        <PageContent>
+          <div className="flex items-center justify-center py-8">
+            <div className="text-muted-foreground">Loading portfolio data...</div>
+          </div>
+        </PageContent>
+      </Page>
     );
   }
 
   if (error) {
     return (
-      <div className="p-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-center py-8">
-              <div className="text-destructive">
-                Error loading portfolio data:{" "}
-                {error instanceof Error ? error.message : "Unknown error"}
-              </div>
+      <Page>
+        <PageHeader heading="Rebalancer" actions={headerActions} />
+        <PageContent>
+          <div className="flex items-center justify-center py-8">
+            <div className="text-destructive">
+              Error loading portfolio data:{" "}
+              {error instanceof Error ? error.message : "Unknown error"}
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </PageContent>
+      </Page>
     );
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <Card>
-        <CardContent className="p-6">
-          <h1 className="mb-2 text-2xl font-semibold">Portfolio Rebalancer</h1>
-          <p className="text-muted-foreground">
-            Track your current portfolio allocation against target allocations and identify
-            rebalancing opportunities.
-          </p>
-        </CardContent>
-      </Card>
-
-      <DivergingBarChart data={chartData} />
-
-      <TargetManager
-        targets={targets}
-        existingHoldings={existingHoldings}
-        onSave={updateTargets}
-        isSaving={isUpdating}
-      />
-    </div>
+    <Page>
+      <PageHeader heading="Rebalancer" actions={headerActions} />
+      <PageContent>
+        <DivergingBarChart data={chartData} />
+      </PageContent>
+    </Page>
   );
 }
 
