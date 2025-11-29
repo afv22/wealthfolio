@@ -121,16 +121,25 @@ export function DivergingBarChart({
                     </>
                   ) : (
                     <>
-                      {/* Simple horizontal bar for current allocation only */}
-                      <div className="relative flex h-8 items-center">
-                        <div
-                          className="h-6 rounded bg-blue-500/60"
-                          style={{ width: `${currentScaled}%` }}
-                        />
-                        <div className="text-foreground absolute left-2 text-xs font-medium">
-                          {item.current.toFixed(1)}%
+                      {/* Centered horizontal bar for current allocation only */}
+                      <div className="grid grid-cols-2 items-center gap-0">
+                        {/* Left spacer */}
+                        <div className="relative flex h-8 items-center justify-end pr-1" />
+
+                        {/* Right side - Current allocation extending from center */}
+                        <div className="relative flex h-8 items-center justify-start pl-1">
+                          <div
+                            className="h-6 rounded-r bg-blue-500/60"
+                            style={{ width: `${currentScaled}%` }}
+                          />
+                          <div className="text-foreground absolute left-2 text-xs font-medium">
+                            {item.current.toFixed(1)}%
+                          </div>
                         </div>
                       </div>
+
+                      {/* Center axis line */}
+                      <div className="bg-border absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2" />
                     </>
                   )}
                 </div>
