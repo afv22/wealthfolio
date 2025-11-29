@@ -1,45 +1,15 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import type { AddonContext, AddonEnableFunction } from "@wealthfolio/addon-sdk";
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  Icons,
-  Page,
-  PageContent,
-  PageHeader,
-} from "@wealthfolio/ui";
+import { Icons, Page, PageContent, PageHeader } from "@wealthfolio/ui";
 import React from "react";
 import { DivergingBarChart } from "./components/diverging-bar-chart";
-import { TargetManager } from "./components/target-manager";
+import { HeaderActions } from "./components/header-actions";
 import { useAllocationTargets } from "./hooks/use-allocation-targets";
 import { usePortfolioAllocation } from "./hooks/use-portfolio-allocation";
 
 function RebalancerContent({ ctx }: { ctx: AddonContext }) {
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const { data: allocations = [], isLoading, error } = usePortfolioAllocation({ ctx });
-  const {
-    targets,
-    updateTargets,
-    isUpdating,
-    isLoading: targetsLoading,
-  } = useAllocationTargets({ ctx });
-
-  // Get list of existing holdings for the dropdown with symbols
-  const existingHoldings = React.useMemo(() => {
-    return allocations.map((a) => ({
-      name: a.assetClass,
-      symbol: a.symbol,
-    }));
-  }, [allocations]);
-
-  const handleSaveTargets = (newTargets: typeof targets) => {
-    updateTargets(newTargets);
-    setIsDialogOpen(false);
-  };
+  const { targets, isLoading: targetsLoading } = useAllocationTargets({ ctx });
 
   // Merge current allocations with target allocations
   const chartData = React.useMemo(() => {
@@ -71,64 +41,41 @@ function RebalancerContent({ ctx }: { ctx: AddonContext }) {
       });
   }, [allocations, targets]);
 
-  const headerActions = (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Icons.Settings className="mr-2 h-4 w-4" />
-          Configure Targets
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Configure Target Allocations</DialogTitle>
-        </DialogHeader>
-        <TargetManager
-          targets={targets}
-          existingHoldings={existingHoldings}
-          onSave={handleSaveTargets}
-          isSaving={isUpdating}
-        />
-      </DialogContent>
-    </Dialog>
+  const PageWrapper = ({ children }: { children: React.ReactNode }) => (
+    <Page>
+      <PageHeader heading="Rebalancer" actions={<HeaderActions ctx={ctx} />} />
+      <PageContent>{children}</PageContent>
+    </Page>
   );
 
   if (isLoading || targetsLoading) {
     return (
-      <Page>
-        <PageHeader heading="Rebalancer" actions={headerActions} />
-        <PageContent>
-          <div className="flex items-center justify-center py-8">
-            <div className="text-muted-foreground">Loading portfolio data...</div>
-          </div>
-        </PageContent>
-      </Page>
+      <PageWrapper>
+        <div className="flex items-center justify-center py-8">
+          <div className="text-muted-foreground">Loading portfolio data...</div>
+        </div>
+      </PageWrapper>
     );
   }
 
   if (error) {
     return (
-      <Page>
-        <PageHeader heading="Rebalancer" actions={headerActions} />
-        <PageContent>
-          <div className="flex items-center justify-center py-8">
-            <div className="text-destructive">
-              Error loading portfolio data:{" "}
-              {error instanceof Error ? error.message : "Unknown error"}
-            </div>
+      <PageWrapper>
+        <div className="flex items-center justify-center py-8">
+          <div className="text-destructive">
+            Error loading portfolio data: {error instanceof Error ? error.message : "Unknown error"}
           </div>
-        </PageContent>
-      </Page>
+        </div>
+      </PageWrapper>
     );
   }
 
   return (
-    <Page>
-      <PageHeader heading="Rebalancer" actions={headerActions} />
+    <PageWrapper>
       <PageContent>
         <DivergingBarChart data={chartData} />
       </PageContent>
-    </Page>
+    </PageWrapper>
   );
 }
 

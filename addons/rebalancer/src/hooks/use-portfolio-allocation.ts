@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { type AddonContext } from "@wealthfolio/addon-sdk";
 import { useAccounts } from "./use-accounts";
 
-interface AllocationData {
+export interface AllocationData {
   assetClass: string; // Using this field name for compatibility, but will store symbol/name
   current: number;
   marketValue: number;
