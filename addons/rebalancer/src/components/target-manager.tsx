@@ -99,6 +99,11 @@ export function TargetManager({
     setShowDropdown(false);
   };
 
+  const handleReset = () => {
+    setEditedTargets([]);
+    onSave([]);
+  };
+
   // Filter out already added holdings
   const availableHoldings = existingHoldings.filter(
     (h) => !editedTargets.some((t) => t.assetClass === h),
@@ -107,7 +112,15 @@ export function TargetManager({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Target Allocation</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle>Target Allocation</CardTitle>
+          {editedTargets.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={handleReset} disabled={isSaving}>
+              <Icons.Eraser className="mr-1 h-4 w-4" />
+              Clear All
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Existing targets */}
