@@ -33,7 +33,7 @@ export default ({ targets, existingHoldings, onSave, isSaving = false }: TargetM
   }, []);
 
   const totalTarget = editedTargets.reduce((sum, t) => sum + t.target, 0);
-  const isValid = Math.abs(totalTarget - 100) < 0.01; // Allow for floating point precision
+  const isValid = Math.abs(totalTarget - 100) < 0.1; // Allow for floating point precision
 
   const handleAddTarget = () => {
     const targetValue = parseFloat(newTarget);
@@ -42,16 +42,19 @@ export default ({ targets, existingHoldings, onSave, isSaving = false }: TargetM
       return;
     }
 
+    // Round to one decimal place
+    const roundedValue = Math.floor(targetValue * 10) / 10;
+
     // Check if asset class already exists
     const existingIndex = editedTargets.findIndex((t) => t.assetClass === newAssetClass);
     if (existingIndex >= 0) {
       // Update existing
       const updated = [...editedTargets];
-      updated[existingIndex] = { assetClass: newAssetClass, target: targetValue };
+      updated[existingIndex] = { assetClass: newAssetClass, target: roundedValue };
       setEditedTargets(updated);
     } else {
       // Add new
-      setEditedTargets([...editedTargets, { assetClass: newAssetClass, target: targetValue }]);
+      setEditedTargets([...editedTargets, { assetClass: newAssetClass, target: roundedValue }]);
     }
 
     // Reset form
@@ -68,8 +71,11 @@ export default ({ targets, existingHoldings, onSave, isSaving = false }: TargetM
     const targetValue = parseFloat(value);
     if (isNaN(targetValue)) return;
 
+    // Round to one decimal place
+    const roundedValue = Math.round(targetValue * 10) / 10;
+
     const updated = editedTargets.map((t) =>
-      t.assetClass === assetClass ? { ...t, target: targetValue } : t,
+      t.assetClass === assetClass ? { ...t, target: roundedValue } : t,
     );
     setEditedTargets(updated);
   };
