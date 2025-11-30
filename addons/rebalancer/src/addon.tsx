@@ -16,6 +16,14 @@ function RebalancerContent({ ctx }: { ctx: AddonContext }) {
     </Page>
   );
 
+  const ErrorPageWrapper = ({ err }: { err: Error }) => (
+    <PageWrapper>
+      <div className="flex items-center justify-center py-8">
+        <div className="text-destructive">Error: {err.message}</div>
+      </div>
+    </PageWrapper>
+  );
+
   if (allocationLoading || targetsLoading) {
     return (
       <PageWrapper>
@@ -26,31 +34,8 @@ function RebalancerContent({ ctx }: { ctx: AddonContext }) {
     );
   }
 
-  if (allocationError) {
-    return (
-      <PageWrapper>
-        <div className="flex items-center justify-center py-8">
-          <div className="text-destructive">
-            Error loading portfolio allocation data:{" "}
-            {allocationError instanceof Error ? allocationError.message : "Unknown error"}
-          </div>
-        </div>
-      </PageWrapper>
-    );
-  }
-
-  if (targetsError) {
-    return (
-      <PageWrapper>
-        <div className="flex items-center justify-center py-8">
-          <div className="text-destructive">
-            Error loading allocation target data:{" "}
-            {targetsError instanceof Error ? targetsError.message : "Unknown error"}
-          </div>
-        </div>
-      </PageWrapper>
-    );
-  }
+  if (allocationError) return <ErrorPageWrapper err={allocationError} />;
+  if (targetsError) return <ErrorPageWrapper err={targetsError} />;
 
   return (
     <PageWrapper>
