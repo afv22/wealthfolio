@@ -88,17 +88,20 @@ export default ({
                   {hasTargets ? (
                     <>
                       {/* Grid container for left (target) and right (current) */}
-                      <div className="grid grid-cols-2 items-center gap-0">
+                      <div className="relative grid grid-cols-2 items-center gap-0">
                         {/* Left side - Target allocation */}
-                        <div className="relative flex h-8 items-center justify-end pr-1">
-                          {/* Target bar */}
+                        <div className="relative flex h-8 items-center pr-1">
+                          {/* Target bar - positioned absolutely from right edge */}
                           <div
-                            className="h-6 rounded-l bg-green-500/30"
-                            style={{ width: `${targetScaled}%` }}
+                            className="absolute right-1 h-6 rounded-l"
+                            style={{
+                              width: `${targetScaled}%`,
+                              backgroundColor: "rgba(118, 141, 33, 0.3)",
+                            }}
                           />
 
                           {/* Target percentage label */}
-                          <div className="text-muted-foreground absolute right-2 text-xs">
+                          <div className="text-foreground absolute right-2 z-10 text-xs font-medium">
                             {item.target.toFixed(1)}%
                           </div>
                         </div>
@@ -107,12 +110,15 @@ export default ({
                         <div className="relative flex h-8 items-center justify-start pl-1">
                           {/* Current bar */}
                           <div
-                            className="h-6 rounded-r bg-blue-500/30"
-                            style={{ width: `${currentScaled}%` }}
+                            className="h-6 rounded-r"
+                            style={{
+                              width: `${currentScaled}%`,
+                              backgroundColor: "rgba(49, 113, 178, 0.3)",
+                            }}
                           />
 
                           {/* Current percentage label */}
-                          <div className="text-foreground absolute left-2 text-xs font-medium">
+                          <div className="text-foreground absolute left-2 z-10 text-xs font-medium">
                             {item.current.toFixed(1)}%
                           </div>
                         </div>
@@ -125,13 +131,17 @@ export default ({
                       {deviation !== 0 && (
                         <div
                           className={cn(
-                            "absolute top-1/2 h-6 -translate-y-1/2 rounded",
-                            isCurrentLarger
-                              ? "left-1/2 bg-blue-500/60" // Current is larger, show delta extending right from center
-                              : "right-1/2 bg-green-500/60", // Target is larger, show delta extending left from center
+                            "absolute top-1 h-6",
+                            isCurrentLarger ? "rounded-r" : "rounded-l",
                           )}
                           style={{
                             width: `${(Math.abs(deviation) * scale) / 2}%`,
+                            backgroundColor: isCurrentLarger
+                              ? "rgba(49, 113, 178, 0.6)"
+                              : "rgba(118, 141, 33, 0.6)",
+                            ...(isCurrentLarger
+                              ? { left: "calc(50% + 4px)" }
+                              : { right: "calc(50% + 4px)" }),
                           }}
                         />
                       )}
@@ -146,8 +156,11 @@ export default ({
                         {/* Right side - Current allocation extending from center */}
                         <div className="relative flex h-8 items-center justify-start pl-1">
                           <div
-                            className="h-6 rounded-r bg-blue-500/60"
-                            style={{ width: `${currentScaled}%` }}
+                            className="h-6 rounded-r"
+                            style={{
+                              width: `${currentScaled}%`,
+                              backgroundColor: "rgba(49, 113, 178, 0.6)",
+                            }}
                           />
                           <div className="text-foreground absolute left-2 text-xs font-medium">
                             {item.current.toFixed(1)}%
