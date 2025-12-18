@@ -92,66 +92,118 @@ function BalancedState() {
 // Individual recommendation row
 function RecommendationRow({ rec, currency }: { rec: TradeRecommendation; currency: string }) {
   return (
-    <div
-      className={cn(
-        "grid gap-2 rounded-lg border p-3",
-        "grid-cols-1 sm:grid-cols-[1fr_auto_1fr_1fr_1fr]",
-      )}
-    >
-      {/* Asset name + symbol */}
-      <div className="flex flex-col">
-        <span className="font-medium">{rec.assetClass}</span>
-        {rec.symbol && rec.symbol !== rec.assetClass && (
-          <span className="text-muted-foreground text-xs">{rec.symbol}</span>
-        )}
-      </div>
-
-      {/* Action badge */}
-      <div className="flex items-center">
-        <Badge variant={getActionBadgeVariant(rec.action)}>{rec.action}</Badge>
-      </div>
-
-      {/* Current */}
-      <div className="text-right">
-        <div className="text-muted-foreground text-xs sm:hidden">Current</div>
-        <div className="text-sm">
-          {new Intl.NumberFormat(undefined, {
-            style: "currency",
-            currency,
-            maximumFractionDigits: 0,
-          }).format(rec.currentValue)}
+    <div className="rounded-lg border p-3">
+      {/* Mobile layout (stacked) */}
+      <div className="flex flex-col gap-2 sm:hidden">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+            <span className="font-medium">{rec.assetClass}</span>
+            {rec.symbol && rec.symbol !== rec.assetClass && (
+              <span className="text-muted-foreground text-xs">{rec.symbol}</span>
+            )}
+          </div>
+          <Badge variant={getActionBadgeVariant(rec.action)}>{rec.action}</Badge>
         </div>
-        <div className="text-muted-foreground text-xs">{formatPercent(rec.currentPercent)}</div>
-      </div>
-
-      {/* Target */}
-      <div className="text-right">
-        <div className="text-muted-foreground text-xs sm:hidden">Target</div>
-        <div className="text-sm">
-          {new Intl.NumberFormat(undefined, {
-            style: "currency",
-            currency,
-            maximumFractionDigits: 0,
-          }).format(rec.targetValue)}
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Current</span>
+          <span>
+            {new Intl.NumberFormat(undefined, {
+              style: "currency",
+              currency,
+              maximumFractionDigits: 0,
+            }).format(rec.currentValue)}{" "}
+            <span className="text-muted-foreground text-xs">
+              ({formatPercent(rec.currentPercent)})
+            </span>
+          </span>
         </div>
-        <div className="text-muted-foreground text-xs">{formatPercent(rec.targetPercent)}</div>
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Target</span>
+          <span>
+            {new Intl.NumberFormat(undefined, {
+              style: "currency",
+              currency,
+              maximumFractionDigits: 0,
+            }).format(rec.targetValue)}{" "}
+            <span className="text-muted-foreground text-xs">
+              ({formatPercent(rec.targetPercent)})
+            </span>
+          </span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Trade</span>
+          <div className="flex items-center gap-2">
+            <GainAmount value={rec.deltaValue} currency={currency} displayDecimal={false} />
+            <span
+              className={cn(
+                "text-xs",
+                rec.deltaPercent > 0
+                  ? "text-success"
+                  : rec.deltaPercent < 0
+                    ? "text-destructive"
+                    : "text-muted-foreground",
+              )}
+            >
+              ({formatPercent(rec.deltaPercent, true)})
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* Delta */}
-      <div className="text-right">
-        <div className="text-muted-foreground text-xs sm:hidden">Trade</div>
-        <GainAmount value={rec.deltaValue} currency={currency} displayDecimal={false} />
-        <div
-          className={cn(
-            "text-xs",
-            rec.deltaPercent > 0
-              ? "text-success"
-              : rec.deltaPercent < 0
-                ? "text-destructive"
-                : "text-muted-foreground",
+      {/* Desktop layout (table row) */}
+      <div className="hidden items-center gap-4 sm:flex">
+        {/* Asset name + symbol - flex-1 */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="truncate font-medium">{rec.assetClass}</span>
+          {rec.symbol && rec.symbol !== rec.assetClass && (
+            <span className="text-muted-foreground text-xs">{rec.symbol}</span>
           )}
-        >
-          {formatPercent(rec.deltaPercent, true)}
+        </div>
+
+        {/* Action badge - fixed width */}
+        <div className="flex w-16 justify-center">
+          <Badge variant={getActionBadgeVariant(rec.action)}>{rec.action}</Badge>
+        </div>
+
+        {/* Current - fixed width */}
+        <div className="w-24 text-right">
+          <div className="text-sm">
+            {new Intl.NumberFormat(undefined, {
+              style: "currency",
+              currency,
+              maximumFractionDigits: 0,
+            }).format(rec.currentValue)}
+          </div>
+          <div className="text-muted-foreground text-xs">{formatPercent(rec.currentPercent)}</div>
+        </div>
+
+        {/* Target - fixed width */}
+        <div className="w-24 text-right">
+          <div className="text-sm">
+            {new Intl.NumberFormat(undefined, {
+              style: "currency",
+              currency,
+              maximumFractionDigits: 0,
+            }).format(rec.targetValue)}
+          </div>
+          <div className="text-muted-foreground text-xs">{formatPercent(rec.targetPercent)}</div>
+        </div>
+
+        {/* Delta - fixed width */}
+        <div className="w-24 text-right">
+          <GainAmount value={rec.deltaValue} currency={currency} displayDecimal={false} />
+          <div
+            className={cn(
+              "text-xs",
+              rec.deltaPercent > 0
+                ? "text-success"
+                : rec.deltaPercent < 0
+                  ? "text-destructive"
+                  : "text-muted-foreground",
+            )}
+          >
+            {formatPercent(rec.deltaPercent, true)}
+          </div>
         </div>
       </div>
     </div>
@@ -263,12 +315,12 @@ export default function RecommendationsCard({ ctx, className }: RecommendationsC
         <WarningsSection warnings={result.warnings} />
 
         {/* Column headers - desktop only */}
-        <div className="text-muted-foreground mb-2 hidden grid-cols-[1fr_auto_1fr_1fr_1fr] gap-2 text-xs font-medium sm:grid">
-          <div>Asset</div>
-          <div className="w-14 text-center">Action</div>
-          <div className="text-right">Current</div>
-          <div className="text-right">Target</div>
-          <div className="text-right">Trade</div>
+        <div className="text-muted-foreground mb-2 hidden items-center gap-4 text-xs font-medium sm:flex">
+          <div className="flex-1">Asset</div>
+          <div className="w-16 text-center">Action</div>
+          <div className="w-24 text-right">Current</div>
+          <div className="w-24 text-right">Target</div>
+          <div className="w-24 text-right">Trade</div>
         </div>
 
         {/* Recommendations list */}
