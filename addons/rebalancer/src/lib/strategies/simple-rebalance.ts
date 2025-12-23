@@ -96,25 +96,8 @@ export class SimpleRebalanceStrategy implements RebalanceStrategy {
           currentValue: 0,
           name: target.assetClass,
         });
-        warnings.push({
-          type: "TARGET_NO_ASSET",
-          assetClass: target.assetClass,
-          message: `Target set for "${target.assetClass}" but no current holdings found`,
-        });
       }
     }
-
-    // Warn about assets without targets (only if they have value)
-    for (const [assetClass, data] of map) {
-      if (data.currentPercent > 0 && data.targetPercent === 0) {
-        warnings.push({
-          type: "ASSET_NO_TARGET",
-          assetClass,
-          message: `"${assetClass}" has holdings but no target allocation set`,
-        });
-      }
-    }
-
     return map;
   }
 

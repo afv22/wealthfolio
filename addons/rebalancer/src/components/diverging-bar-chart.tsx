@@ -93,7 +93,7 @@ export default ({
                         <div className="relative flex h-8 items-center pr-1">
                           {/* Target bar - positioned absolutely from right edge */}
                           <div
-                            className="absolute right-1 h-6 rounded-l"
+                            className="absolute right-1 h-6 rounded-l-md"
                             style={{
                               width: `${targetScaled}%`,
                               backgroundColor: "rgba(118, 141, 33, 0.3)",
@@ -110,7 +110,7 @@ export default ({
                         <div className="relative flex h-8 items-center justify-start pl-1">
                           {/* Current bar */}
                           <div
-                            className="h-6 rounded-r"
+                            className="h-6 rounded-r-md"
                             style={{
                               width: `${currentScaled}%`,
                               backgroundColor: "rgba(49, 113, 178, 0.3)",
@@ -132,7 +132,7 @@ export default ({
                         <div
                           className={cn(
                             "absolute top-1 h-6",
-                            isCurrentLarger ? "rounded-r" : "rounded-l",
+                            isCurrentLarger ? "rounded-r-md" : "rounded-l-md",
                           )}
                           style={{
                             width: `${(Math.abs(deviation) * scale) / 2}%`,
@@ -156,7 +156,7 @@ export default ({
                         {/* Right side - Current allocation extending from center */}
                         <div className="relative flex h-8 items-center justify-start pl-1">
                           <div
-                            className="h-6 rounded-r"
+                            className="h-6 rounded-r-md"
                             style={{
                               width: `${currentScaled}%`,
                               backgroundColor: "rgba(49, 113, 178, 0.6)",

@@ -5,7 +5,6 @@ import {
   Badge,
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
   cn,
@@ -340,10 +339,9 @@ export default function RecommendationsCard({ ctx, className }: RecommendationsC
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-4">
         <div className="space-y-1">
           <CardTitle>Rebalancing Recommendations</CardTitle>
-          <CardDescription>Trade recommendations to reach your targets</CardDescription>
         </div>
         <Select value={strategy} onValueChange={setStrategy}>
-          <SelectTrigger className="h-9 w-[130px]">
+          <SelectTrigger className="h-9 w-32">
             <SelectValue placeholder="Strategy" />
           </SelectTrigger>
           <SelectContent>

@@ -12,7 +12,7 @@ function RebalancerContent({ ctx }: { ctx: AddonContext }) {
   const PageWrapper = ({ children }: { children: React.ReactNode }) => (
     <Page>
       <PageHeader heading="Rebalancer" actions={<HeaderActions ctx={ctx} />} />
-      <PageContent>{children}</PageContent>
+      <PageContent className="mx-auto w-full max-w-screen-2xl">{children}</PageContent>
     </Page>
   );
 
